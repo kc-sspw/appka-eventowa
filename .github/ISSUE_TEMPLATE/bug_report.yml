@@ -1,0 +1,27 @@
+name: Błąd
+description: Zgłoś problem w działającym elemencie projektu
+title: "[Bug] "
+labels:
+  - "type:bug"
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Co się stało?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Oczekiwane zachowanie
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Jak odtworzyć?
+  - type: textarea
+    id: context
+    attributes:
+      label: Kontekst wyjazdu/eventu
+      description: Nie podawaj danych osobowych uczestników.
