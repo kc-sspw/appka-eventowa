@@ -1,0 +1,29 @@
+name: Propozycja funkcji
+description: Zaproponuj zmianę lub nową funkcję
+title: "[Feature] "
+labels:
+  - "type:feature"
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Jaki problem rozwiązujemy?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propozycja
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Źródło / potwierdzenie potrzeby
+      description: Wskaż decyzję, dokument lub oznacz pomysł jako propozycję.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Kryteria odbioru
