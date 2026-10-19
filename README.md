@@ -37,6 +37,12 @@ Zamknąć MVP i kryteria pilotażu, a następnie zweryfikować co najmniej dwa r
 
 Zamknąć zakres MVP i kryteria pilotażu w [wymaganiach](docs/requirements.md).
 
+## Materiał referencyjny: Poligon
+
+W organizacji znajduje się również [`apka-wyjazdowa`](https://github.com/kc-sspw/apka-wyjazdowa) — kod wcześniejszego projektu **Poligon** (backend Spring Boot i klient Flutter). To **prototyp referencyjny**, a nie drugie główne repo projektu KC.
+
+Przed wykorzystaniem fragmentów tego kodu trzeba zweryfikować prawa do jego użycia, bezpieczeństwo oraz zgodność z ustalonym MVP. Nie traktujemy istniejącego stosu technologicznego ani funkcji Poligon jako decyzji architektonicznej Komisji. Zakres oceny jest w [Issue #2](https://github.com/kc-sspw/appka-eventowa/issues/2).
+
 ## Dokumentacja
 
 - [Wymagania](docs/requirements.md)
