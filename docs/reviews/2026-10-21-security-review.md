@@ -60,6 +60,6 @@
 
 PoC można rozpocząć **dopiero gdy**: (a) właściciel potwierdził prawa do materiałów lub wybrano niezależną implementację bez kopiowania; (b) nie ma aktywnych znanych, ujawnionych poświadczeń, a historyczne użycie/rotacja zostały ocenione; (c) zatwierdzono minimalną specyfikację z izolacją per event, autoryzacją serwerową i minimalizacją danych; (d) zdefiniowano politykę zdjęć, retencji i cache; (e) wyznaczono opiekuna review i bezpieczną ścieżkę testów bez automatycznego wdrożenia produkcyjnego.
 
-Pierwszy PoC ma używać **danych syntetycznych i izolowanego środowiska**, bez prawdziwych danych uczestników. Zakres minimalny to informacje/komunikaty, zadania i zdjęcia typu BeReal oraz obsługa wielu niezależnych wydarzeń, zgodnie z wcześniejszymi uzgodnieniami; push nie jest warunkiem PoC. Konkretne zachowania wymagają zatwierdzenia w `docs/requirements.md`.
+Pierwszy PoC ma używać **danych syntetycznych i izolowanego środowiska**, bez prawdziwych danych uczestników. Uzgodniony kierunek obejmuje informacje/komunikaty, mechanikę fotograficzną typu BeReal oraz obsługę wielu niezależnych wydarzeń; push nie jest warunkiem PoC. Zadania z gry fotograficznej są osobną propozycją, a nie zatwierdzonym wymaganiem produktu. Konkretne zachowania wymagają zatwierdzenia w `docs/requirements.md`.
 
 **Nie stwierdzono gotowości produkcyjnej żadnej z referencji.**

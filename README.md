@@ -43,6 +43,10 @@ W organizacji znajduje się również [`apka-wyjazdowa`](https://github.com/kc-s
 
 Przed wykorzystaniem fragmentów tego kodu trzeba zweryfikować prawa do jego użycia, bezpieczeństwo oraz zgodność z ustalonym MVP. Nie traktujemy istniejącego stosu technologicznego ani funkcji Poligon jako decyzji architektonicznej Komisji. Zakres oceny jest w [Issue #2](https://github.com/kc-sspw/appka-eventowa/issues/2).
 
+## Bramka bezpieczeństwa przed PoC
+
+Rozpoczęcie PoC i adaptacja referencji są uzależnione od [warunków bezpieczeństwa PoC](docs/poc-readiness.md) oraz [przeglądu źródeł z 21.10.2026](docs/reviews/2026-10-21-security-review.md). Repozytorium nadal nie zawiera kodu aplikacji ani konfiguracji wdrożeniowej.
+
 ## Dokumentacja
 
 - [Wymagania](docs/requirements.md)
