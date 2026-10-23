@@ -1,0 +1,43 @@
+# Publiczne repo: lokalne konfiguracje i tajne dane nie mogą trafić do Git
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.p12
+*.pfx
+*.key
+*service-account*.json
+secrets/
+credentials/
+
+# Lokalne bazy, kopie danych, logi i przesłane media
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.log
+*.bak
+*.dump
+*.sql.gz
+uploads/
+storage/uploads/
+media/uploads/
+backups/
+
+# Artefakty lokalne, niezależne od docelowego stacku
+.DS_Store
+.idea/
+.vscode/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+node_modules/
+dist/
+build/
+target/
+coverage/
+.cache/
+tmp/
+temp/
