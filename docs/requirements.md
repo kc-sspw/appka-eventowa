@@ -40,3 +40,29 @@ Zamknąć MVP jednego produktu obsługującego wiele oddzielnych wyjazdów/event
 - decyzja o retencji zdjęć jest potwierdzona.
 
 Nie dokładamy funkcji bez materiału źródłowego lub jawnej decyzji projektowej.
+
+## Kolejny etap: zamknięcie zakresu PoC
+
+**Status 23.10.2026:** poniższa tabela **nie jest jeszcze specyfikacją wykonawczą**. Właściciel projektu przedstawi szczegółowy opis docelowych procesów w kolejnym czacie. Do tego czasu nie zakładamy liczby ekranów, stacku, dostawcy tożsamości, integracji produkcyjnych ani tego, że wszystkie moduły referencji mają znaleźć się w MVP.
+
+| Decyzja do zapisania | Status | Uwagi |
+|---|---|---|
+| Rola/typy użytkowników oraz możliwość należenia do kilku eventów | Otwarta | Wymagane kontrole po stronie backendu |
+| Tworzenie wydarzenia, zaproszenia, dołączanie/opuszczanie | Otwarta | Szczegółowy przebieg poda właściciel |
+| Scenariusze harmonogramu i komunikatów | Otwarta | Referencja: Poligon |
+| Dokładna mechanika fotografii (inspiracja BeReal / zadania / oceny / inne) | Otwarta | Nie przesądzać rozwiązania z gry referencyjnej |
+| Zgody, widoczność zdjęć i retencja | Otwarta | 30 dni po zakończeniu eventu to hipoteza |
+| Model eventu, integracje, stack oraz local setup | Otwarta | Rozstrzygnięcie po wyborze minimalnego pionowego wycinka |
+| Zakres prototypu lokalnego vs pilotaż dla uczestników | Otwarta | Różne progi bezpieczeństwa |
+| Wymagania dotyczące UI, dostępności i urządzeń | Otwarta | Aplikacja webowa; detale nieustalone |
+
+### Scenariusze obowiązkowe niezależnie od wybranych funkcji
+
+- Dwa wydarzenia są obsługiwane jednocześnie, a operacje i zasoby mają prawidłowy event scope.
+- Konto A nie może czytać ani edytować zasobów wydarzenia B (API, pliki, ewentualny realtime).
+- Uprawnienia użytkownika nie są określane wyłącznie przez pola przekazane w formularzu albo request body.
+- PoC można uruchomić i przetestować **lokalnie na danych syntetycznych**, bez produkcyjnego dostępu do SSPW.
+
+Zatwierdzony zakres zapisujemy jako **MUST / SHOULD / LATER / OUT** z kryteriami odbioru. Mapa komponentów jest w [reference-inventory.md](reference-inventory.md), a procedura pracy z kolejnym chatem w [POC_START_HERE.md](POC_START_HERE.md).
+
+Nie przenosimy całych rozwiązań Poligon ani SSPWPhotoTaskGame 1:1 bez analizy ich zabezpieczeń i dopasowania do zatwierdzonych wymagań.
