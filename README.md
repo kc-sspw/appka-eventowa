@@ -1,56 +1,43 @@
-# Appka eventowa
+# Appka eventowa — KC SSPW
 
-Projekt Komisji Cyfryzacji SSPW na kadencję 2026/2027. W dotychczasowych materiałach projekt występuje jako **appka wyjazdowa / Aplikacja wyjazdowa + BeReal**.
+**Status: przygotowanie zakresu PoC.** Główne repozytorium planowanego produktu Komisji Cyfryzacji SSPW (2026/2027). W starszych materiałach występuje jako **appka wyjazdowa** lub **„Aplikacja wyjazdowa + BeReal”** — ta druga nazwa opisuje pomysł na mechanikę fotograficzną, nie współpracę z firmą BeReal.
 
-## Cel
+> **Następny krok:** [POC_START_HERE.md](docs/POC_START_HERE.md) — kompletne przekazanie kontekstu do następnego chatu, w którym właściciel opisze szczegółową wizję, dobierzemy elementy Poligonu i gry fotograficznej, a później powstanie prompt dla osobnego chatu implementacyjnego.
 
-Przygotować jeden minimalny produkt możliwy do wykorzystania przy wielu oddzielnych wyjazdach/eventach.
+## Cel produktu
 
-## Aktualny stan
+Jedna aplikacja webowa, która może obsługiwać **wiele niezależnych wyjazdów i wydarzeń jednocześnie**. Dotychczasowy zakres źródłowy obejmuje role, harmonogram, uczestników, zdjęcia oraz informacje/komunikaty przypisane do konkretnego wydarzenia. Mechanika fotograficzna inspirowana BeReal jest do rozstrzygnięcia podczas definiowania PoC.
 
-Etap doprecyzowania MVP i przygotowania pilotażu.
+Robocza reguła retencji zdjęć: **30 dni po zakończeniu wydarzenia** — to propozycja, nie decyzja. Powiadomienia push nie są wymagane w pierwszym PoC. **Szczegółowy zestaw funkcji, ekrany, technologie i priorytety nie zostały jeszcze zatwierdzone.**
 
-## Zakres potwierdzony w źródłach
+## Stan repozytorium
 
-- obsługa wielu oddzielnych wyjazdów/eventów,
-- izolacja danych i kontekstu pomiędzy równoległymi wyjazdami,
-- role,
-- harmonogram,
-- lista uczestników,
-- zdjęcia przypisane do konkretnego wyjazdu,
-- robocza reguła usuwania zdjęć po 30 dniach od zakończenia wyjazdu.
+- Repo jest **publiczne**: kod i historia są dostępne do odczytu, ale prawo zapisu wynika z uprawnień Teams i współpracowników, nie z publicznej widoczności.
+- Gałęzie `main`, `develop` i `release/*` są objęte repozytoryjnym Rulesetem **KC SSPW — protected main**, z wymaganym PR, akceptacją i squash merge. Ownerzy organizacji mają bypass **wyłącznie przez PR**.
+- Na tym etapie repo **zawiera dokumentację i szablony współpracy, nie kod aplikacji**. Nie ma jeszcze uzgodnionego stosu technologicznego, uruchomienia ani deploymentu.
+- Produkcyjne wdrożenia będą organizowane przez **zewnętrzną infrastrukturę CI**, nie GitHub Actions; do rozpoczęcia lokalnego PoC nie trzeba dostępu produkcyjnego.
+- Projektowy spike/prototyp na danych syntetycznych może ruszyć po uzgodnieniu minimalnego scenariusza. PoC z prawdziwymi uczestnikami wymaga oddzielnej decyzji i spełnienia warunków bezpieczeństwa.
 
-Szczegółowe priorytety funkcji nadal wymagają potwierdzenia.
+## Referencje (nie repo produktu)
 
-## Minimalny zakres pierwszego etapu
+- [Poligon — kc-sspw/apka-wyjazdowa](https://github.com/kc-sspw/apka-wyjazdowa): Spring Boot, Flutter, harmonogram, załoga, ogłoszenia, zadania i WebSocket.
+- [SSPWPhotoTaskGame](https://github.com/Korniszon99/SSPWPhotoTaskGame): PHP/PWA, wyzwania i zdjęcia, oceny, ranking, panel administratora.
+- [PWGame](https://github.com/Korniszon99/PWGame): starsze rozwiązanie, wyłącznie jako dodatkowy kontekst.
 
-Zamknąć MVP i kryteria pilotażu, a następnie zweryfikować co najmniej dwa równoległe wyjazdy/eventy.
+Właściciel potwierdził prawo do korzystania z kodu referencyjnego; przy rzeczywistym kopiowaniu trzeba zachować autorstwo, zidentyfikować źródłowe pliki i zależności zewnętrzne. **Nie kopiujemy wprost istniejących konfiguracji bezpieczeństwa ani danych testowych/produkcyjnych.** Szczegóły: [mapa modułów](docs/reference-inventory.md) i [pochodzenie](docs/source-provenance.md).
 
-## Zależności
+## Wymagania i zasady pracy
 
-- potwierdzony zakres MVP,
-- organizatorzy pilotażu,
-- zasady przetwarzania danych uczestników i zdjęć,
-- decyzje dotyczące retencji danych.
+- [Rozpocznij PoC / przekazanie do nowego chatu](docs/POC_START_HERE.md)
+- [Wymagania i otwarte decyzje](docs/requirements.md)
+- [Kandydaci do adaptacji z referencji](docs/reference-inventory.md)
+- [Kryteria bezpieczeństwa PoC](docs/poc-readiness.md)
+- [Statyczny przegląd źródeł z 21.10.2026](docs/reviews/2026-10-21-security-review.md)
+- [Pochodzenie i wykorzystanie kodu](docs/source-provenance.md)
+- [Decyzje architektoniczne (ADR)](docs/decisions/README.md)
+- [Współpraca i pull requesty](CONTRIBUTING.md)
+- [Zgłaszanie problemów bezpieczeństwa](SECURITY.md)
 
-## Następny krok
+Zadania do kontynuacji: [Issue #1 — zakres MVP i pilotaż](https://github.com/kc-sspw/appka-eventowa/issues/1), [Issue #2 — ocena Poligonu](https://github.com/kc-sspw/appka-eventowa/issues/2).
 
-Zamknąć zakres MVP i kryteria pilotażu w [wymaganiach](docs/requirements.md).
-
-## Materiał referencyjny: Poligon
-
-W organizacji znajduje się również [`apka-wyjazdowa`](https://github.com/kc-sspw/apka-wyjazdowa) — kod wcześniejszego projektu **Poligon** (backend Spring Boot i klient Flutter). To **prototyp referencyjny**, a nie drugie główne repo projektu KC.
-
-Przed wykorzystaniem fragmentów tego kodu trzeba zweryfikować prawa do jego użycia, bezpieczeństwo oraz zgodność z ustalonym MVP. Nie traktujemy istniejącego stosu technologicznego ani funkcji Poligon jako decyzji architektonicznej Komisji. Zakres oceny jest w [Issue #2](https://github.com/kc-sspw/appka-eventowa/issues/2).
-
-## Bramka bezpieczeństwa przed PoC
-
-Rozpoczęcie PoC i adaptacja referencji są uzależnione od [warunków bezpieczeństwa PoC](docs/poc-readiness.md) oraz [przeglądu źródeł z 21.10.2026](docs/reviews/2026-10-21-security-review.md). Repozytorium nadal nie zawiera kodu aplikacji ani konfiguracji wdrożeniowej.
-
-## Dokumentacja
-
-- [Wymagania](docs/requirements.md)
-- [Decyzje architektoniczne](docs/decisions/README.md)
-- [Contributing](CONTRIBUTING.md)
-
-Technologia nie jest na tym etapie narzucona.
+**Granica danych:** kod może być publiczny; sekrety, bazy z danymi użytkowników, zdjęcia uczestników, kopie zapasowe i dostęp do infrastruktury muszą pozostać poza publicznym Git.
