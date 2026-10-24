@@ -35,9 +35,10 @@ def browser(monkeypatch):
 
 
 def login(page, origin, account):
-    page.goto(origin + "/auth/login")
-    page.get_by_label("Login", exact=True).fill(account.username)
-    page.get_by_label("Hasło", exact=True).fill("synthetic-test-password")
+    response = page.goto(origin + "/auth/login")
+    assert response.status == 200, page.content()
+    page.get_by_label("Login", exact=False).fill(account.username)
+    page.get_by_label("Hasło", exact=False).fill("synthetic-test-password")
     page.get_by_role("button", name="Wejdź na wydarzenie").click()
     expect(page.get_by_role("button", name="Wyloguj")).to_be_visible()
 
@@ -100,7 +101,7 @@ def test_participants_organizer_photo_flow(browser, live_server, world, jpeg):
         p1.keyboard.press("Tab")
         assert p1.evaluate("document.activeElement !== document.body")
         p1.goto(other + "/gallery")
-        expect(p1.get_by_label("Login", exact=True)).to_be_visible()
+        expect(p1.get_by_label("Login", exact=False)).to_be_visible()
         organizer.goto(f"{origin}/photos/{photo.pk}")
         organizer.get_by_text("Moderacja zdjęcia", exact=True).click()
         organizer.get_by_label("Potwierdzam trwałe usunięcie.").check()
