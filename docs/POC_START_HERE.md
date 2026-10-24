@@ -1,3 +1,9 @@
+# Aktualny punkt startu — 24.10.2026
+
+Zakres jest już zatwierdzony, a implementacja PoC znajduje się na gałęzi `feat/django-event-poc`. Zacznij od [README](../README.md), [wymagań](requirements.md), [raportu testów](testing.md) i [instrukcji organizatora](organizer-guide.md). Poniższe przekazanie z 23.10 jest historycznym opisem etapu sprzed specyfikacji; nie otwiera ponownie zamkniętych decyzji.
+
+---
+
 # PoC — instrukcja dla kolejnego chatu
 
 **Stan wejściowy: 23.10.2026.** Ten dokument przygotowuje **rozmowę o zakresie i architekturze PoC**, a nie stanowi zatwierdzonej specyfikacji implementacji.

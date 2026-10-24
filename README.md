@@ -1,43 +1,99 @@
 # Appka eventowa — KC SSPW
 
-**Status: przygotowanie zakresu PoC.** Główne repozytorium planowanego produktu Komisji Cyfryzacji SSPW (2026/2027). W starszych materiałach występuje jako **appka wyjazdowa** lub **„Aplikacja wyjazdowa + BeReal”** — ta druga nazwa opisuje pomysł na mechanikę fotograficzną, nie współpracę z firmą BeReal.
+Lokalny PoC mobilnego huba wydarzenia z grą fotograficzną. Django 5.2 LTS,
+Python 3.13 i PostgreSQL 17; jeden serwer WWW oraz worker kolejki w bazie.
+Zakres zatwierdzono 23.10.2026. Prace są na `feat/django-event-poc`, przez draft PR.
 
-> **Następny krok:** [POC_START_HERE.md](docs/POC_START_HERE.md) — kompletne przekazanie kontekstu do następnego chatu, w którym właściciel opisze szczegółową wizję, dobierzemy elementy Poligonu i gry fotograficznej, a później powstanie prompt dla osobnego chatu implementacyjnego.
+## Co działa
 
-## Cel produktu
+- Odizolowane subdomeny, konta uczestników i organizatorów per wydarzenie.
+- Grupy, aktualności, stałe informacje i harmonogram z odbiorcami.
+- Lokalny import/eksport XLSX: arkusz pozostaje w przeglądarce; API dostaje tylko imię, grupy i dane techniczne konta.
+- Losowanie bez powtórek, limit pięciu **niewykonanych** zadań, kompresja zdjęć i podmiana z kontrolą wersji.
+- Prywatna galeria, oceny uczestników i organizatorów, komentarze i moderacja.
+- Google Drive z OAuth `drive.file`, lokalny FakeStorage, idempotencja i worker odzyskujący operacje po awarii.
+- Zamknięcie usuwa dane aplikacji; aktualny album pozostaje u organizatora. Nie ma automatycznego kasowania albumu po 7 ani 30 dniach.
 
-Jedna aplikacja webowa, która może obsługiwać **wiele niezależnych wyjazdów i wydarzeń jednocześnie**. Dotychczasowy zakres źródłowy obejmuje role, harmonogram, uczestników, zdjęcia oraz informacje/komunikaty przypisane do konkretnego wydarzenia. Mechanika fotograficzna inspirowana BeReal jest do rozstrzygnięcia podczas definiowania PoC.
+## Uruchomienie od zera
 
-Robocza reguła retencji zdjęć: **30 dni po zakończeniu wydarzenia** — to propozycja, nie decyzja. Powiadomienia push nie są wymagane w pierwszym PoC. **Szczegółowy zestaw funkcji, ekrany, technologie i priorytety nie zostały jeszcze zatwierdzone.**
+Wymagane: Git, Python 3 do wygenerowania konfiguracji oraz Docker z Compose v2.
 
-## Stan repozytorium
+```bash
+git clone https://github.com/kc-sspw/appka-eventowa.git
+cd appka-eventowa
+git switch feat/django-event-poc
+python3 scripts/init_local.py
+docker compose up --build -d
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py seed_demo --participants 12
+mkdir -p .private
+docker compose cp web:/app/.private/demo-credentials.csv .private/demo-credentials.csv
+```
 
-- Repo jest **publiczne**: kod i historia są dostępne do odczytu, ale prawo zapisu wynika z uprawnień Teams i współpracowników, nie z publicznej widoczności.
-- Gałęzie `main`, `develop` i `release/*` są objęte repozytoryjnym Rulesetem **KC SSPW — protected main**, z wymaganym PR, akceptacją i squash merge. Ownerzy organizacji mają bypass **wyłącznie przez PR**.
-- Na tym etapie repo **zawiera dokumentację i szablony współpracy, nie kod aplikacji**. Nie ma jeszcze uzgodnionego stosu technologicznego, uruchomienia ani deploymentu.
-- Produkcyjne wdrożenia będą organizowane przez **zewnętrzną infrastrukturę CI**, nie GitHub Actions; do rozpoczęcia lokalnego PoC nie trzeba dostępu produkcyjnego.
-- Projektowy spike/prototyp na danych syntetycznych może ruszyć po uzgodnieniu minimalnego scenariusza. PoC z prawdziwymi uczestnikami wymaga oddzielnej decyzji i spełnienia warunków bezpieczeństwa.
+`init_local.py` generuje losowe sekrety do ignorowanego `.env` i nie nadpisuje
+istniejącej konfiguracji. `createsuperuser` prosi interaktywnie o login i hasło
+administratora platformy; brak publicznego domyślnego hasła.
+Seed tworzy dwa aktywne wydarzenia, 50 zadań w każdym, organizatorów i uczestników.
+Losowe dostępy są w prywatnym CSV, a nie w logach. Nie uruchamiaj seeda drugi raz
+w tej samej bazie. Liczbę uczestników A można ustawić do 500; B ma trzy osoby.
 
-## Referencje (nie repo produktu)
+| Adres lokalny | Przeznaczenie |
+|---|---|
+| http://platform.localhost:8000/admin/ | Administrator platformy |
+| http://event-a.events.localhost:8000/ | Wydarzenie A |
+| http://event-b.events.localhost:8000/ | Wydarzenie B |
 
-- [Poligon — kc-sspw/apka-wyjazdowa](https://github.com/kc-sspw/apka-wyjazdowa): Spring Boot, Flutter, harmonogram, załoga, ogłoszenia, zadania i WebSocket.
-- [SSPWPhotoTaskGame](https://github.com/Korniszon99/SSPWPhotoTaskGame): PHP/PWA, wyzwania i zdjęcia, oceny, ranking, panel administratora.
-- [PWGame](https://github.com/Korniszon99/PWGame): starsze rozwiązanie, wyłącznie jako dodatkowy kontekst.
+Jeśli system nie rozwiązuje tych nazw, dodaj je do lokalnego pliku hosts jako
+`127.0.0.1`. Dla nowego slugu dodaj analogiczny wpis. Cookies są oddzielne dla
+hostów; konta eventowe nie logują się do panelu platformy.
 
-Właściciel potwierdził prawo do korzystania z kodu referencyjnego; przy rzeczywistym kopiowaniu trzeba zachować autorstwo, zidentyfikować źródłowe pliki i zależności zewnętrzne. **Nie kopiujemy wprost istniejących konfiguracji bezpieczeństwa ani danych testowych/produkcyjnych.** Szczegóły: [mapa modułów](docs/reference-inventory.md) i [pochodzenie](docs/source-provenance.md).
+Web sam wykonuje migracje i `collectstatic`; worker startuje po gotowości weba.
+Zdjęcia testowe, cache i CSV są w prywatnym wolumenie, poza katalogiem static.
+`docker compose down` zatrzymuje środowisko, zachowując wolumeny.
+Nie dodawaj `--volumes`, jeśli chcesz zachować bazę i lokalny album.
 
-## Wymagania i zasady pracy
+## Testy
 
-- [Rozpocznij PoC / przekazanie do nowego chatu](docs/POC_START_HERE.md)
-- [Wymagania i otwarte decyzje](docs/requirements.md)
-- [Kandydaci do adaptacji z referencji](docs/reference-inventory.md)
-- [Kryteria bezpieczeństwa PoC](docs/poc-readiness.md)
-- [Statyczny przegląd źródeł z 21.10.2026](docs/reviews/2026-10-21-security-review.md)
-- [Pochodzenie i wykorzystanie kodu](docs/source-provenance.md)
-- [Decyzje architektoniczne (ADR)](docs/decisions/README.md)
-- [Współpraca i pull requesty](CONTRIBUTING.md)
-- [Zgłaszanie problemów bezpieczeństwa](SECURITY.md)
+Pełne CI uruchamia PostgreSQL 17 i Chromium, bez rzeczywistych kont Google,
+sekretów produkcyjnych ani deploymentu. Wyniki i ograniczenia:
+[raport weryfikacji](docs/testing.md).
 
-Zadania do kontynuacji: [Issue #1 — zakres MVP i pilotaż](https://github.com/kc-sspw/appka-eventowa/issues/1), [Issue #2 — ocena Poligonu](https://github.com/kc-sspw/appka-eventowa/issues/2).
+Lokalny runner Python 3.13 i testowa baza PostgreSQL:
 
-**Granica danych:** kod może być publiczny; sekrety, bazy z danymi użytkowników, zdjęcia uczestników, kopie zapasowe i dostęp do infrastruktury muszą pozostać poza publicznym Git.
+```bash
+docker compose -f compose.yaml -f compose.dev.yaml up -d db
+python3.13 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements-dev.txt
+set -a
+. ./.env
+set +a
+export PGHOST=127.0.0.1
+export DJANGO_SETTINGS_MODULE=config.test_settings
+python manage.py check
+python manage.py makemigrations --check --dry-run
+pytest -q -m 'not browser'
+python -m playwright install --with-deps chromium --only-shell
+RUN_BROWSER_TESTS=1 pytest -q
+ruff check .
+ruff format --check .
+```
+
+Runner wymaga uprawnienia `CREATEDB` w **lokalnej testowej** bazie. Nigdy nie kieruj
+`config.test_settings` do środowiska używanego przez uczestników. Ustawienia testów
+stosują szybkie hashowanie wyłącznie dla danych syntetycznych.
+Pomocniczy `LOCAL_SQLITE_SMOKE=1 pytest -m 'not browser and not concurrency'` nie
+zastępuje PostgreSQL; testy blokad na SQLite są jawnie pomijane.
+
+## Dokumentacja i granice
+
+- [Instrukcja organizatora](docs/organizer-guide.md)
+- [Administracja, Drive i utrzymanie](docs/operations.md)
+- [Wymagania](docs/requirements.md), [pełna specyfikacja](docs/IMPLEMENTATION_PROMPT.md), [ADR](docs/decisions/README.md)
+- [Testy i ograniczenia](docs/testing.md), [gotowość do pilotażu](docs/poc-readiness.md)
+- [Referencje i autorstwo](docs/source-provenance.md), [zasady PR](CONTRIBUTING.md), [bezpieczeństwo](SECURITY.md)
+
+Google Drive ma prawdziwy adapter, ale **nie wykonano live OAuth/uploadu** z kontem
+organizatora. Lokalny start używa FakeStorage, zabronionego poza DEBUG.
+PoC nie jest zatwierdzonym wdrożeniem dla prawdziwych uczestników. Brak rankingu,
+push, SMS, rejestracji publicznej i produkcyjnego deploymentu GitHub Actions.

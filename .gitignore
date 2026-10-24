@@ -41,3 +41,9 @@ coverage/
 .cache/
 tmp/
 temp/
+.private/
+staticfiles/
+.ruff_cache/
+test-results/
+.coverage
+pytest-of-root/

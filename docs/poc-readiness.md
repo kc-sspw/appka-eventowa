@@ -1,45 +1,40 @@
-# Warunki PoC — appka eventowa
+# Gotowość PoC — stan implementacji 24.10.2026
 
-**Stan na 23.10.2026:** repo publiczne i chronione, referencje zidentyfikowane, prawa do adaptacji potwierdzone przez właściciela. **Można rozpocząć planowanie i lokalne prace na danych syntetycznych.** Nie oznacza to zgody na udostępnienie aplikacji rzeczywistym uczestnikom ani wdrożenie.
+Zakres i architektura zostały zatwierdzone: [wymagania](requirements.md),
+[specyfikacja](IMPLEMENTATION_PROMPT.md), [ADR](decisions/README.md).
+Implementacja jest proponowana przez draft PR #6; nie została wdrożona produkcyjnie.
 
-## Dwa różne progi gotowości
+## Lokalny PoC na danych syntetycznych
 
-### A. Rozpoczęcie rozmowy o zakresie i lokalnego PoC
+- [x] Django/PostgreSQL, migracje, lokalny Compose i dwa odizolowane wydarzenia.
+- [x] Konta i role per host, grupy, import/eksport XLSX bez przesyłania arkusza.
+- [x] Aktualności, stałe informacje i harmonogram z filtrowaniem odbiorców.
+- [x] Gra, limit pięciu aktywnych, podmiana, galeria, oceny i komentarze.
+- [x] Prywatny magazyn lokalny oraz adapter Drive/OAuth z testami kontraktowymi.
+- [x] Moderacja, retry, budżet i zamknięcie zachowujące aktualny album.
+- [x] Testy PostgreSQL, współbieżności i Chromium w CI; szczegóły i aktualny commit w [raporcie](testing.md).
+- [x] Instrukcje startu, organizatora i administratora.
+- [x] Brak automatycznego deploymentu, maili i SMS; źródła i zależności opisane.
 
-- [x] Główne repo produktu to `kc-sspw/appka-eventowa`; Poligon i gra fotograficzna są **referencjami**, nie gotowym produktem.
-- [x] Właściciel potwierdził prawo do korzystania z kodu referencyjnego (z zachowaniem atrybucji i analizy zależności).
-- [x] GitHub: repo `public`, gałąź `main` objęta aktywnym Rulesetem: PR, jedna akceptacja, ochrona przed force-push i usunięciem, Owner PR-only bypass.
-- [x] Zdefiniowano granice bezpieczeństwa: tylko dane syntetyczne, brak sekretów i prawdziwych zdjęć, brak produkcyjnego deploymentu z repo.
-- [ ] Właściciel opisał szczegółową wizję, role, funkcje i pierwsze scenariusze PoC.
-- [ ] Zatwierdzono minimalny zakres pierwszego pionowego wycinka i zakres elementów adaptowanych z referencji.
-- [ ] Uzgodniono technologię, sposób uruchomienia lokalnego i pierwszy ADR.
+Kod jest gotowy do przeglądu jako lokalny PoC, nie jako potwierdzona integracja
+live ani system przetestowany pod dużym obciążeniem.
 
-Wymagania i wybór technologii są **celowo otwarte** do następnego chatu: [POC_START_HERE.md](POC_START_HERE.md).
+## Przed realnym pilotem — nadal do wykonania
 
-### B. Udostępnienie PoC użytkownikom / użycie rzeczywistych danych
+- [ ] Review kodu i akceptacja PR zgodnie z Rulesetem.
+- [ ] Live Google OAuth/upload/download/podmiana/usunięcie na testowym koncie organizatora.
+- [ ] Cofnięcie zgody i odnowienie jej na tym samym koncie/folderze; sprawdzenie trybu publikacji OAuth.
+- [ ] Domena, wildcard TLS, reverse proxy, prawidłowy adres klienta dla limitowania prób i limit body.
+- [ ] Zasady danych, zgód uczestników, konta chmurowego organizatora i udostępnienia albumu.
+- [ ] Uprawnienia repo/CI/środowiska docelowego oraz sekrety poza repo.
+- [ ] Telefony iOS/Android, Safari, rzeczywista sieć wyjazdowa i przerwania połączeń.
+- [ ] Uzgodniony ruch pilota, test równoczesnych uploadów oraz limity konta Google/API.
+- [ ] Retencja logów infrastruktury, backup/restore i ponowne czyszczenie zamkniętych eventów.
+- [ ] Ustalone wsparcie operatora, postępowanie przy błędach i osobna zgoda na wdrożenie.
 
-Poniższe pozostaje **NO-GO**, dopóki nie zostanie sprawdzone i zatwierdzone:
+Album zostaje własnością organizatora. Aplikacja nie udostępnia go publicznie
+ani nie kasuje po 30 dniach. Przykładowe siedem dni po wydarzeniu to decyzja
+organizacyjna właściciela albumu, nie timer aplikacji.
 
-- [ ] Właściciel produktu i reviewer zaakceptowali MVP, role i macierz uprawnień.
-- [ ] Każdy obiekt, API, zapis, plik, powiadomienie i kanał realtime ma ustalony kontekst `event_id` oraz autoryzację po stronie backendu.
-- [ ] Test negatywny: konto wydarzenia A nie czyta, nie zmienia i nie otrzymuje treści ani zdjęć wydarzenia B; test obejmuje także zgadywanie identyfikatorów obiektów.
-- [ ] Nie przeniesiono publicznego `GET /**`, globalnego WebSocket broadcast ani możliwości ustawiania `isSuperAdmin` w danych wejściowych klienta z Poligonu.
-- [ ] Zatwierdzono politykę zdjęć (zgody, widoczność, uprawnienia, usuwanie/retencja). **30 dni po zakończeniu wydarzenia** to nadal wartość robocza.
-- [ ] Przeprowadzono weryfikację aktywnych sekretów, logów i danych **środowiska docelowego**. Historyczne poświadczenia Poligonu zostały przez właściciela opisane jako testowe i nie stanowią blokera projektowego; nie kopiować ich do nowego systemu.
-- [ ] Zweryfikowano autoryzację, bezpieczeństwo przesyłania plików, kontrolę dostępu do zdjęć oraz brak publicznego cache uploadów.
-- [ ] Wykonano testy integracyjne i bezpieczeństwa odpowiednie do użytych zależności; sam statyczny audyt nie wystarcza.
-- [ ] Zatwierdzono oddzielne środowisko pilotażu, role osób obsługujących wdrożenie, retencję i postępowanie przy incydencie. Produkcyjne CI pozostaje poza GitHub Actions.
-- [ ] Sprawdzono rzeczywiste uprawnienia Teams, pozaorganizacyjnych współpracowników oraz polityki Actions/fork PR. Sam Ruleset nie stanowi całej kontroli dostępu.
-
-## Minimalne scenariusze testowe lokalnego PoC
-
-1. Dwa eventy istnieją i są obsługiwane jednocześnie.
-2. Użytkownik eventu A **nie może** uzyskać treści/zdjęć/komunikatów eventu B ani zmienić ich przez API, podmianę ID, websocket czy bezpośredni URL do pliku.
-3. Konto bez wymaganej roli nie może edytować danych eventu ani przyznać sobie roli administracyjnej.
-4. Jeśli w PoC są zdjęcia, są dostępne wyłącznie osobom uprawnionym; nie są przechowywane w publicznym PWA cache.
-5. Włączone przypadki użycia dają się uruchomić na syntetycznych danych, na jednej instrukcji lokalnego startu.
-6. Testy nie dotykają Azure Production, rzeczywistych sekretów ani kont SSPW.
-
-**Uwaga:** to testy bazowe. Ostateczna lista zależy od zaakceptowanych funkcji PoC. Obecne repo zawiera dokumentację i **nie przeprowadzono testów kodu aplikacji**, ponieważ aplikacja jeszcze nie powstała.
-
-Tło i granice wnioskowania: [statyczny przegląd 21.10](reviews/2026-10-21-security-review.md). Zasady reuse: [source-provenance.md](source-provenance.md).
+Historyczny [audyt referencji](reviews/2026-10-21-security-review.md) pozostaje
+niezmieniony; nie jest audytem bezpieczeństwa tej nowej implementacji.

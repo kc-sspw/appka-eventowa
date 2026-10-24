@@ -1,0 +1,4 @@
+# Optional host PostgreSQL access for a local Python test runner.
+services:
+  db:
+    ports: ["127.0.0.1:5432:5432"]
