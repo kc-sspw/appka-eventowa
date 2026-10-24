@@ -1,0 +1,51 @@
+name: PoC tests
+on:
+  pull_request:
+  push:
+    branches: [feat/django-event-poc]
+permissions:
+  contents: read
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  postgres-and-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: event_poc
+          POSTGRES_USER: event_poc
+          POSTGRES_PASSWORD: synthetic-ci-only
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U event_poc -d event_poc"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DJANGO_SETTINGS_MODULE: config.test_settings
+      PGDATABASE: event_poc
+      PGUSER: event_poc
+      PGPASSWORD: synthetic-ci-only
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      RUN_BROWSER_TESTS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: python -m playwright install --with-deps chromium --only-shell
+      - run: ruff check . && ruff format --check .
+      - run: python manage.py check && python manage.py makemigrations --check --dry-run
+      - run: python manage.py migrate --noinput
+      - run: pytest -q --junitxml=test-results/junit.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: synthetic-test-results
+          path: test-results/
+          retention-days: 7

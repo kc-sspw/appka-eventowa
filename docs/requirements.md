@@ -1,68 +1,38 @@
-# Wymagania — Appka eventowa
+# Zatwierdzony zakres PoC — 23.10.2026
 
-## Kontekst źródłowy
+Źródło: specyfikacja właściciela; pełny kontrakt w [IMPLEMENTATION_PROMPT.md](IMPLEMENTATION_PROMPT.md). Zastępuje otwarte decyzje z poprzedniego etapu oraz propozycję 30 dni retencji.
 
-Projekt występuje w materiałach jako „Aplikacja wyjazdowa + BeReal” oraz „appka wyjazdowa”. Repozytorium używa nazwy `appka-eventowa`.
+## 2. Potwierdzone wymagania właściciela
 
-## Cel pierwszego etapu
+- Produkt jest mobilnym hubem informacyjnym wydarzenia z grą fotograficzną.
+- Jedna aplikacja obsługuje od początku wiele odizolowanych wydarzeń pod osobnymi subdomenami. Pierwszy realny pilot będzie jeden; test izolacji dwóch wydarzeń należy do PoC.
+- Administrator platformy tworzy wydarzenie i przekazuje administrację organizatorom. Organizator zarządza wyłącznie swoim wydarzeniem.
+- Konta uczestników są per wydarzenie, tworzone ręcznie lub z eksportu Excel z Forms. Organizator sam przekazuje loginy i hasła, np. mailem.
+- Import zwraca dane wejściowe z dwiema dodatkowymi kolumnami login i hasło. PESEL, e-mail i pozostałe zbędne dane nie mają być przechowywane przez aplikację. Przechowujemy maksymalnie imię jako opis osoby oraz niezbędne dane techniczne.
+- Uczestnik może należeć do kilku grup. Treści mają odbiorców: wszyscy albo wybrane grupy.
+- Aktualności działają niezależnie. Stałe informacje i opcjonalny plan ramowy znajdują się w zakładce Informacje, pojawiającej się dopiero, gdy odbiorca ma dostępną treść.
+- Harmonogram tworzy organizator prostym formularzem na stronie. Import Word/PDF/Excel harmonogramu nie jest potrzebny.
+- Gra rusza w terminie organizatora, pokazuje instrukcję i umożliwia losowanie z puli. Limit: 5 niezrealizowanych zadań jednocześnie, nie 5 zdjęć na cały wyjazd.
+- Jedno aktualne zdjęcie na przydzielone zadanie, z możliwością podmiany przed końcem gry. Gra indywidualna; uczestnicy mogą wykonywać zadania razem poza modelem aplikacji.
+- Wspólna galeria wydarzenia, własne zadania/zdjęcia, komentarze, oddzielne oceny organizatorów i uczestników, moderacja. Bez rankingu.
+- Pierwszy magazyn zdjęć: Google Drive organizatora. Po wydarzeniu zewnętrzny album pozostaje pod jego opieką i jest udostępniany poza aplikacją.
+- Zamknięcie odbiera dostęp pod subdomeną i usuwa dane operacyjne aplikacji. Archiwum ma być minimalne.
 
-Zamknąć MVP jednego produktu obsługującego wiele oddzielnych wyjazdów/eventów i przygotować kryteria pilotażu.
+## 3. Zakres i priorytety
 
-## Zakres potwierdzony
-
-- wiele oddzielnych wyjazdów/eventów,
-- izolacja pomiędzy równoległymi wyjazdami,
-- role,
-- harmonogram,
-- lista uczestników,
-- zdjęcia przypisane do konkretnego wyjazdu,
-- robocza reguła usuwania zdjęć po 30 dniach od zakończenia wyjazdu.
-
-## Do potwierdzenia
-
-- dokładny zakres logowania i ról,
-- priorytety funkcji MVP,
-- zasady dostępu do zdjęć,
-- dokładna polityka retencji i moment startu 30-dniowego okresu,
-- kryteria pilotażu.
-
-## Zależności
-
-- decyzje organizatorów wyjazdów,
-- zasady przetwarzania danych uczestników i zdjęć,
-- potwierdzony scenariusz pilotażowy.
-
-## Kryteria odbioru pierwszego etapu
-
-- zakres MVP jest zapisany i zaakceptowany,
-- scenariusz dwóch równoległych wyjazdów jest opisany,
-- wymagania dotyczące harmonogramu i uczestników są jednoznaczne,
-- decyzja o retencji zdjęć jest potwierdzona.
-
-Nie dokładamy funkcji bez materiału źródłowego lub jawnej decyzji projektowej.
-
-## Kolejny etap: zamknięcie zakresu PoC
-
-**Status 23.10.2026:** poniższa tabela **nie jest jeszcze specyfikacją wykonawczą**. Właściciel projektu przedstawi szczegółowy opis docelowych procesów w kolejnym czacie. Do tego czasu nie zakładamy liczby ekranów, stacku, dostawcy tożsamości, integracji produkcyjnych ani tego, że wszystkie moduły referencji mają znaleźć się w MVP.
-
-| Decyzja do zapisania | Status | Uwagi |
+| Priorytet | Elementy | Warunek odbioru |
 |---|---|---|
-| Rola/typy użytkowników oraz możliwość należenia do kilku eventów | Otwarta | Wymagane kontrole po stronie backendu |
-| Tworzenie wydarzenia, zaproszenia, dołączanie/opuszczanie | Otwarta | Szczegółowy przebieg poda właściciel |
-| Scenariusze harmonogramu i komunikatów | Otwarta | Referencja: Poligon |
-| Dokładna mechanika fotografii (inspiracja BeReal / zadania / oceny / inne) | Otwarta | Nie przesądzać rozwiązania z gry referencyjnej |
-| Zgody, widoczność zdjęć i retencja | Otwarta | 30 dni po zakończeniu eventu to hipoteza |
-| Model eventu, integracje, stack oraz local setup | Otwarta | Rozstrzygnięcie po wyborze minimalnego pionowego wycinka |
-| Zakres prototypu lokalnego vs pilotaż dla uczestników | Otwarta | Różne progi bezpieczeństwa |
-| Wymagania dotyczące UI, dostępności i urządzeń | Otwarta | Aplikacja webowa; detale nieustalone |
+| MUST | Eventy, role, logowanie, konta, grupy, import lokalny i eksport dostępów | Organizator przygotowuje dwa wydarzenia bez ujawniania danych między nimi |
+| MUST | Aktualności, stałe informacje, harmonogram z odbiorcami | Dwa konta z różnych grup widzą właściwe treści i zakładki |
+| MUST | Instrukcja/start gry, pula, losowanie, limit 5, zdjęcie/podmiana | Pełna droga od wylosowania do potwierdzonego zdjęcia i nowego losowania |
+| MUST | Galeria, komentarze, oceny w dwóch kategoriach, moderacja | Widoczna interakcja kilku kont, egzekwowana serwerowo |
+| MUST | Adapter Google Drive, lokalny adapter testowy, odzyskiwanie po błędach | Testy kontraktowe i udokumentowany test live albo jawny brak jego wykonania |
+| MUST | Zamknięcie i czyszczenie, minimalne archiwum | Dane A znikają, dane B pozostają, album A nie jest automatycznie usuwany |
+| SHOULD | Drobne usprawnienia formularzy i widoków pustych, wygodne filtry galerii | Nie mogą opóźniać MUST; podstawowa używalność i dostępność są obowiązkowe |
+| LATER | SMS, push, OneDrive, drużyny gry, ranking, live WebSocket, szersze testy obciążenia | Nie dodawać implementacji do pierwszego PoC |
+| OUT | Samodzielna rejestracja, PESEL/e-mail w bazie uczestników, publiczna galeria podczas gry, pełny CRM, import harmonogramu, natywna aplikacja | Brak tych przepływów i niepotrzebnych danych |
 
-### Scenariusze obowiązkowe niezależnie od wybranych funkcji
+PoC jest etapowany technicznie, ale zakończenie samego pierwszego pionowego wycinka nie oznacza ukończenia całego zakresu MUST.
 
-- Dwa wydarzenia są obsługiwane jednocześnie, a operacje i zasoby mają prawidłowy event scope.
-- Konto A nie może czytać ani edytować zasobów wydarzenia B (API, pliki, ewentualny realtime).
-- Uprawnienia użytkownika nie są określane wyłącznie przez pola przekazane w formularzu albo request body.
-- PoC można uruchomić i przetestować **lokalnie na danych syntetycznych**, bez produkcyjnego dostępu do SSPW.
 
-Zatwierdzony zakres zapisujemy jako **MUST / SHOULD / LATER / OUT** z kryteriami odbioru. Mapa komponentów jest w [reference-inventory.md](reference-inventory.md), a procedura pracy z kolejnym chatem w [POC_START_HERE.md](POC_START_HERE.md).
-
-Nie przenosimy całych rozwiązań Poligon ani SSPWPhotoTaskGame 1:1 bez analizy ich zabezpieczeń i dopasowania do zatwierdzonych wymagań.
+Szczegółowe kryteria i scenariusze: sekcje 5–14 specyfikacji.
