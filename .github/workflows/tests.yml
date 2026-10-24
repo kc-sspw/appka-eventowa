@@ -49,3 +49,25 @@ jobs:
           name: synthetic-test-results
           path: test-results/
           retention-days: 7
+  compose-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate disposable local configuration
+        run: python3 scripts/init_local.py
+      - name: Build and start the documented stack
+        run: docker compose up --build --wait --wait-timeout 180
+      - name: Seed and check both event hosts
+        run: |
+          docker compose exec -T web python manage.py seed_demo --participants 2
+          curl --fail --silent --show-error -H 'Host: event-a.events.localhost' http://127.0.0.1:8000/auth/login > /dev/null
+          curl --fail --silent --show-error -H 'Host: event-b.events.localhost' http://127.0.0.1:8000/auth/login > /dev/null
+      - name: Verify worker closes A and preserves B
+        run: |
+          docker compose exec -T web python manage.py shell -c "from events.models import Event; from events.lifecycle import begin_close; begin_close(Event.objects.get(slug='event-a'))"
+          docker compose exec -T worker python manage.py storage_worker --once
+          docker compose exec -T web python manage.py shell -c "from events.models import Event; from accounts.models import Account; assert Event.objects.get(slug='event-a').state == 'CLOSED'; assert not Account.objects.filter(event__slug='event-a').exists(); assert Account.objects.filter(event__slug='event-b').exists()"
+      - name: Stop disposable containers and volumes
+        if: always()
+        run: docker compose down --volumes
