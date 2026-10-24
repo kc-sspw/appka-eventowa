@@ -94,13 +94,15 @@ def draw_view(request):
 @scoped("PARTICIPANT")
 def upload(request, assignment_id):
     rate_limit(request.event, str(request.user.pk), "upload", 10)
-    try:
-        key = uuid.UUID(request.POST.get("idempotency_key", ""))
-        version = int(request.POST.get("expected_version", ""))
-    except ValueError:
-        raise DomainError("Nieprawidłowa wersja lub identyfikator uploadu.", 400)
+    # Parsing may stop at an oversized file before later multipart form fields.
+    data = request.POST
     if getattr(request, "upload_too_large", False):
         raise DomainError("Zdjęcie przekracza 15 MiB.", 413)
+    try:
+        key = uuid.UUID(data.get("idempotency_key", ""))
+        version = int(data.get("expected_version", ""))
+    except ValueError:
+        raise DomainError("Nieprawidłowa wersja lub identyfikator uploadu.", 400)
     file = request.FILES.get("photo")
     if not file:
         raise DomainError("Wybierz zdjęcie JPEG, PNG lub WebP.", 400)
@@ -122,6 +124,7 @@ def gallery(request):
         .select_related("assignment__account", "assignment__task", "organizer_score")
         .annotate(average=Avg("ratings__value"), votes=Count("ratings"))
     )
+    photos = photos.order_by("-created_at", "id")
     if request.GET.get("mine") == "1":
         photos = photos.filter(assignment__account=request.user)
     return render(

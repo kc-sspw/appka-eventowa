@@ -1,4 +1,6 @@
 from django.contrib import admin, messages
+from django.core.exceptions import PermissionDenied
+from django.db import transaction
 
 from .lifecycle import clean_event
 from .models import Event
@@ -17,6 +19,18 @@ class EventAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False  # Slugs remain permanently reserved.
+
+    def save_model(self, request, obj, form, change):
+        with transaction.atomic():
+            if change:
+                current = Event.objects.select_for_update().get(pk=obj.pk)
+                if current.state in {"CLOSING", "CLOSED"}:
+                    raise PermissionDenied("Zamykanego wydarzenia nie można edytować.")
+                obj.state = current.state
+                obj.slug = current.slug
+                obj.cleaned_at = current.cleaned_at
+                obj.cleanup_failed = current.cleanup_failed
+            super().save_model(request, obj, form, change)
 
     @admin.action(description="Ponów porządkowanie zamykanych wydarzeń")
     def retry_cleanup(self, request, queryset):

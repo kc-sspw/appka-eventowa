@@ -247,3 +247,70 @@ def test_task_description_immutable_after_draw(world, client):
     client.post(f"/organizer/tasks/{task.pk}", {"description": "Zmieniony sens"}, HTTP_HOST=HOST)
     task.refresh_from_db()
     assert task.description == "Pierwotna treść"
+
+
+def test_duplicate_group_returns_form_error(world, client):
+    client.force_login(world.o)
+    response = client.post("/organizer/groups/new", {"name": world.ga.name}, HTTP_HOST=HOST)
+    assert response.status_code == 200
+    assert "już istnieje" in response.content.decode()
+
+
+def test_local_storage_setup_for_new_event(world, client, settings):
+    from media_storage.models import StorageConnection
+
+    StorageConnection.objects.filter(event=world.a).delete()
+    client.force_login(world.o)
+    assert client.post("/organizer/storage/local", HTTP_HOST=HOST).status_code == 302
+    assert StorageConnection.objects.get(event=world.a).folder_id == str(world.a.pk)
+    settings.STORAGE_BACKEND = "drive"
+    assert client.post("/organizer/storage/local", HTTP_HOST=HOST).status_code == 404
+
+
+def test_platform_login_rate_limit(world, client):
+    for _ in range(10):
+        assert (
+            client.post(
+                "/admin/login/",
+                {"username": "unknown", "password": "wrong"},
+                HTTP_HOST="platform.localhost",
+            ).status_code
+            == 200
+        )
+    assert (
+        client.post(
+            "/admin/login/",
+            {"username": "unknown", "password": "wrong"},
+            HTTP_HOST="platform.localhost",
+        ).status_code
+        == 429
+    )
+
+
+def test_gallery_query_count_does_not_grow_per_photo(world, client, photo_factory, user_factory):
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    photo_factory(world.a, world.p)
+    client.force_login(world.p)
+    with CaptureQueriesContext(connection) as first:
+        assert client.get("/gallery", HTTP_HOST=HOST).status_code == 200
+    for _ in range(23):
+        photo_factory(world.a, user_factory(world.a))
+    with CaptureQueriesContext(connection) as full:
+        assert client.get("/gallery", HTTP_HOST=HOST).status_code == 200
+    assert len(full) == len(first)
+
+
+def test_stale_platform_edit_cannot_reopen_closed_event(world, rf):
+    from django.contrib.admin.sites import AdminSite
+    from django.core.exceptions import PermissionDenied
+
+    from events.admin import EventAdmin
+    from events.models import Event
+
+    stale = world.a
+    Event.objects.filter(pk=stale.pk).update(state="CLOSED")
+    with pytest.raises(PermissionDenied):
+        EventAdmin(Event, AdminSite()).save_model(rf.post("/admin/"), stale, None, change=True)
+    assert Event.objects.get(pk=stale.pk).state == "CLOSED"

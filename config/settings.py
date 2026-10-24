@@ -116,7 +116,7 @@ FILE_UPLOAD_TEMP_DIR = str(PRIVATE_ROOT / "incoming")
 Path(FILE_UPLOAD_TEMP_DIR).mkdir(mode=0o700, exist_ok=True)
 FILE_UPLOAD_HANDLERS = [
     "media_storage.uploads.BoundedUploadHandler",
-    "django.core.files.uploadhandler.TemporaryFileUploadHandler",
+    "media_storage.uploads.PrivateTemporaryUploadHandler",
 ]
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
 DATA_UPLOAD_MAX_NUMBER_FILES = 1

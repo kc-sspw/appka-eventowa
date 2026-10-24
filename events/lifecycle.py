@@ -1,5 +1,11 @@
+import shutil
+
+from django.conf import settings
+from django.contrib.admin.models import LogEntry
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from accounts.models import Account, AccountSession, Group, ImportBatch
@@ -30,6 +36,15 @@ def clean_event(event_id):
         if event.state != "CLOSING":
             return
         purge_event(event.id)
+        shutil.rmtree(settings.PRIVATE_ROOT / "incoming" / str(event.id), ignore_errors=True)
+        # Django admin history stores object_repr; remove event account names too.
+        account_ids = [
+            str(pk) for pk in Account.objects.filter(event=event).values_list("pk", flat=True)
+        ]
+        LogEntry.objects.filter(
+            Q(content_type=ContentType.objects.get_for_model(Event), object_id=str(event.pk))
+            | Q(content_type=ContentType.objects.get_for_model(Account), object_id__in=account_ids)
+        ).delete()
         keys = AccountSession.objects.filter(account__event=event).values("session_key")
         Session.objects.filter(session_key__in=keys).delete()
         # Delete operational content even if one provider deletion is unavailable.

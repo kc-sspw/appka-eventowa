@@ -1,3 +1,4 @@
+import re
 import uuid
 
 from django.core.exceptions import ValidationError
@@ -38,7 +39,7 @@ class Event(models.Model):
         ]
 
     def clean(self):
-        if self.slug != self.slug.lower() or not self.slug or "_" in self.slug:
+        if not re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", self.slug):
             raise ValidationError("Slug: małe litery, cyfry i myślniki.")
         if bool(self.game_starts_at) != bool(self.game_ends_at):
             raise ValidationError("Ustaw oba terminy gry.")

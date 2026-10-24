@@ -341,3 +341,83 @@ def test_fake_storage_disabled_without_debug(world, settings):
     settings.DEBUG = False
     with pytest.raises(StorageError):
         FakeStorage(world.a.pk)
+
+
+def test_close_removes_scoped_admin_logs_and_temporary_uploads(world, settings, user_factory):
+    from django.contrib.admin.models import ADDITION, LogEntry
+    from django.contrib.contenttypes.models import ContentType
+
+    platform = user_factory(None, "PLATFORM")
+    for account in [world.p, world.q]:
+        LogEntry.objects.create(
+            user=platform,
+            content_type=ContentType.objects.get_for_model(Account),
+            object_id=str(account.pk),
+            object_repr="Synthetic name",
+            action_flag=ADDITION,
+        )
+        directory = settings.PRIVATE_ROOT / "incoming" / str(account.event_id)
+        directory.mkdir(parents=True)
+        (directory / "synthetic.upload").write_bytes(b"private")
+    begin_close(world.a, world.o)
+    clean_event(world.a.pk)
+    assert not LogEntry.objects.filter(object_id=str(world.p.pk)).exists()
+    assert LogEntry.objects.filter(object_id=str(world.q.pk)).exists()
+    assert not (settings.PRIVATE_ROOT / "incoming" / str(world.a.pk)).exists()
+    assert (settings.PRIVATE_ROOT / "incoming" / str(world.b.pk) / "synthetic.upload").exists()
+
+
+def test_multipart_upload_uses_private_event_temp_and_size_limit(world, client, jpeg, settings):
+    task = Task.objects.create(event=world.a, description="Syntetyczne zdjęcie")
+    assignment = draw(world.a, world.p, uuid.uuid4())
+    assert assignment.task_id == task.pk
+    client.force_login(world.p)
+
+    def send():
+        return client.post(
+            f"/assignments/{assignment.pk}/photo",
+            {"photo": jpeg(), "idempotency_key": str(uuid.uuid4()), "expected_version": 0},
+            HTTP_HOST="event-a.events.localhost",
+        )
+
+    settings.UPLOAD_MAX_BYTES = 10
+    assert send().status_code == 413
+    settings.UPLOAD_MAX_BYTES = 15 * 1024**2
+    assert send().status_code == 302
+    assert Photo.objects.filter(assignment=assignment).exists()
+    assert not list((settings.PRIVATE_ROOT / "incoming").rglob("*.upload"))
+
+
+def test_manual_cleanup_requires_closing_exact_file_and_explicit_verification(
+    world, photo_factory, monkeypatch
+):
+    from django.core.management import call_command
+    from django.core.management.base import CommandError
+
+    photo = photo_factory(world.a, world.p)
+    moderate(world.a, world.o, photo.pk)
+    file_id = photo.operation.external_file_id
+    args = ["confirm_storage_absence", world.a.slug, str(photo.operation_id)]
+    with pytest.raises(CommandError):
+        call_command(*args, file_id=file_id, verified_absent=True)
+    begin_close(world.a, world.o)
+    monkeypatch.setattr(FakeStorage, "fault", "delete")
+    clean_event(world.a.pk)
+    with pytest.raises(CommandError):
+        call_command(*args, file_id=file_id)
+    with pytest.raises(CommandError):
+        call_command(*args, file_id="wrong-file", verified_absent=True)
+    with pytest.raises(CommandError):
+        call_command(
+            "confirm_storage_absence",
+            world.a.slug,
+            "invalid-uuid",
+            file_id=file_id,
+            verified_absent=True,
+        )
+    monkeypatch.setattr(FakeStorage, "fault", None)
+    FakeStorage(world.a.pk).delete(file_id)  # Independent operator verification/action.
+    call_command(*args, file_id=file_id, verified_absent=True, stdout=io.StringIO())
+    world.a.refresh_from_db()
+    assert world.a.state == "CLOSED"
+    assert StorageConnection.objects.filter(event=world.b).exists()

@@ -4,6 +4,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import pytest
+from django.db import connections
 from playwright.sync_api import expect, sync_playwright
 
 from accounts.models import Account
@@ -31,6 +32,7 @@ def browser(monkeypatch):
             args=["--host-resolver-rules=MAP *.localhost 127.0.0.1", "--no-proxy-server"]
         )
         yield browser
+        connections.close_all()
         browser.close()
 
 
@@ -48,6 +50,11 @@ def responsive(page, name):
     output.mkdir(exist_ok=True)
     for width in [360, 390, 430, 1280]:
         page.set_viewport_size({"width": width, "height": 900})
+        for img in page.locator("img").all():
+            img.scroll_into_view_if_needed()
+            expect(img).to_have_js_property("complete", True)
+            assert img.evaluate("image => image.naturalWidth > 0")
+        page.evaluate("window.scrollTo(0, 0)")
         assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), (
             f"Overflow at {width}px"
         )
@@ -177,8 +184,37 @@ def test_xlsx_network_allowlist_preserves_values_and_reimport(
         )
         assert result["rows"][2][5] == "=1+1" and result["formula"] is None
         assert len(result["rows"][2][-1]) >= 32
+        account_count = Account.objects.filter(event=world.a).count()
+        page.on("dialog", lambda dialog: dialog.accept())
+        page.goto(origin + "/organizer/import")
+        page.locator("#workbook").set_input_files(str(path))
+        expect(page.get_by_text("Plik otwarty lokalnie", exact=False)).to_be_visible()
+        page.locator("#header-row").fill("2")
+        page.locator("#header-row").press("Tab")
+        page.locator("#name-col").select_option("1")
+        page.locator("#group-col").select_option("4")
+        page.locator("#first-name-only").check()
+        page.get_by_role("button", name="Przygotuj podgląd").click()
+        page.locator("#acknowledge").check()
+        page.get_by_role("button", name="Utwórz konta", exact=True).click()
+        expect(page.get_by_role("button", name="Pobierz XLSX z dostępami")).to_be_visible()
+        assert Account.objects.filter(event=world.a).count() == account_count
+        with page.expect_download() as downloaded_again:
+            page.get_by_role("button", name="Pobierz XLSX z dostępami").click()
+        reimport_path = tmp_path / "reimport.xlsx"
+        downloaded_again.value.save_as(reimport_path)
+        passwords = page.evaluate(
+            """bytes => {
+          const wb=XLSX.read(new Uint8Array(bytes),{type:'array'});
+          const rows=XLSX.utils.sheet_to_json(wb.Sheets.Odpowiedzi,{header:1,range:0,defval:''});
+          return [rows[2].at(-1),rows[3].at(-1)];
+        }""",
+            list(reimport_path.read_bytes()),
+        )
+        assert passwords == ["", ""]
         uploads = [json.loads(body) for url, body in requests if url.endswith("/organizer/imports")]
-        assert len(uploads) == 1
+        assert len(uploads) == 2
+        assert all(row["initial_password"] is None for row in uploads[1]["rows"])
         for row in uploads[0]["rows"]:
             assert set(row) == {"row_id", "first_name", "group_ids", "login", "initial_password"}
             assert row["first_name"] == "Ala" and row["group_ids"] == [str(world.ga.pk)]

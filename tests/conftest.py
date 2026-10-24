@@ -50,6 +50,9 @@ def event_factory():
 @pytest.fixture
 def user_factory():
     def create(event, role="PARTICIPANT", **kwargs):
+        kwargs.setdefault(
+            "public_number", Account.objects.filter(event=event).count() + 1 if event else None
+        )
         return Account.objects.create_user(
             "u_" + uuid.uuid4().hex,
             "synthetic-test-password",

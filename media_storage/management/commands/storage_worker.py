@@ -23,7 +23,7 @@ def tick():
         clean_event(pk)
     RateBucket.objects.filter(expires_at__lt=timezone.now()).delete()
     OAuthState.objects.filter(expires_at__lt=timezone.now()).delete()
-    for path in Path(settings.FILE_UPLOAD_TEMP_DIR).glob("*"):
+    for path in Path(settings.FILE_UPLOAD_TEMP_DIR).rglob("*"):
         if path.is_file() and path.stat().st_mtime < time.time() - 3600:
             path.unlink(missing_ok=True)
 

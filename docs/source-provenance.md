@@ -33,3 +33,34 @@ Nie pobieraj żadnych rzeczywistych zdjęć, kont, baz, poświadczeń, logów an
 - [ ] Ustalić zasady zdjęć uczestników odrębnie od praw do kodu.
 
 Mapa funkcji do oceny: [reference-inventory.md](reference-inventory.md). Bezpieczeństwo integracji: [poc-readiness.md](poc-readiness.md).
+
+
+## Implementacja PoC — 24.10.2026
+
+Nowy kod Python/HTML/CSS/JS napisano dla zatwierdzonego kontraktu Django. Nie
+kopiowano bloków PHP, Java, Flutter, konfiguracji, zdjęć ani baz referencji.
+Reuse dotyczy zachowań produktu, opisanych w sekcji 12 [specyfikacji](IMPLEMENTATION_PROMPT.md):
+
+| Referencja przypięta w specyfikacji | Wykorzystane zachowanie | Nowa implementacja |
+|---|---|---|
+| SSPWPhotoTaskGame `77046c6806a6b09fa7442f7df11ccae1123f4b9f`: `photo_game/actions/draw_task.php`, `database/database.php` | Zadanie → przydział → zdjęcie, pięć niewykonanych | `game/services.py`, blokada Event i brak powtórek |
+| Ten sam commit: `elements/user_task_list_grid.php`, `gallery.php` | Karty własnych zadań i galeria 24 zdjęć | Własne templates/CSS, prywatne URL, bez rankingu |
+| Ten sam commit: `actions/upload_photo.php`, `rate_photo.php`, `admin_delete_photo.php`, `js/ratings.js` | Kompresja, oceny i moderacja | Nowy pipeline, API, wersjonowanie, POST+CSRF, worker |
+| Poligon `2fc494ecaaa6ca5195c51f2cb4a3290b2fda0fb9`: `src/main/java/me/havooc/poligon/model/ScheduleDay.java`, `ScheduleElement.java`, `controller/AnnouncementController.java` | Plan po dniach i ogłoszenia | `information/`, odbiorcy po grupach i event scope |
+
+Nagłówki referencji Poligon przypisują wskazany kontekst Łukaszowi Piętce (FUT 2025).
+Nie przypisujemy autorstwa konkretnych plików gry na podstawie loginu właściciela;
+żadnego ich kodu nie przeniesiono. Nowa implementacja importu, kont, komentarzy,
+OAuth, Drive i zamknięcia wynika ze specyfikacji, nie z kopiowania referencji.
+
+Jedyny vendored komponent frontendowy to **SheetJS CE 0.20.3**, autor SheetJS LLC,
+Apache-2.0. `static/vendor/xlsx-0.20.3.min.js` jest pełnym niezmienionym bundlem;
+notice w nagłówku i `SHEETJS-LICENSE.txt` zachowano. Źródło dystrybucji:
+https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js .
+SHA-256: `cc015130aa8521e7f088f88898eba949ccdcbfb38df0bd129b44b7273c3a6f41`.
+Biblioteka jest serwowana lokalnie; strona importu nie pobiera jej z CDN.
+
+Zależności Pythona są przypięte w `requirements*.txt`, instalowane przez pip
+z oryginalnymi metadanymi i licencjami, bez kopiowania ich źródeł do modułów
+aplikacji. Przed redystrybucją obrazu zachowaj notices z dystrybucji zależności.
+Wybór licencji całej nowej aplikacji pozostaje decyzją właściciela.

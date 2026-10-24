@@ -29,3 +29,12 @@ Współbieżność testuj na PostgreSQL, nie traktuj SQLite jako dowodu działan
 
 Definition of done: instrukcja uruchomienia od zera, migracje, seed dwóch wydarzeń z kontami wygenerowanymi lokalnie (bez publicznego stałego hasła admina), komplet MUST, testy z wynikiem, brak sekretów/danych w Git, dokumentacja reuse, instrukcja organizatora i raport ograniczeń. Przykładowy zestaw syntetyczny może mieć 200 kont i 50 zadań w A oraz kilka kont w B; nie jest to gwarancja wydajności dla 200 jednoczesnych uploadów. Zmierz podstawowy scenariusz i opisz środowisko, bez deklarowania nieprzetestowanego SLA.
 
+
+## Stan wykonania — 24.10.2026
+
+Wszystkie pięć etapów implementacji znajduje się w draft PR #6 na
+`feat/django-event-poc`: moduły Django, migracje, seed, UI, lokalny parser XLSX,
+adaptery magazynu, worker i testy. Dokumentacja: README, instrukcja organizatora,
+operacje/Google OAuth oraz raport testów. Pełny run PostgreSQL + Chromium już
+przeszedł; końcowe wyniki przypięte są w [testing.md](testing.md).
+Live Drive i warunki prawdziwego pilotażu pozostają osobnymi krokami.
