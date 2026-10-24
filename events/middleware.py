@@ -44,6 +44,18 @@ class EventAccessMiddleware:
     def __call__(self, request):
         user, event = request.user, request.event
         if request.is_platform:
+            if request.path == "/admin/login/" and request.method == "POST":
+                from .security import DomainError, rate_limit
+
+                try:
+                    rate_limit(
+                        None, request.META.get("REMOTE_ADDR", ""), "platform_login_ip", 30, 900
+                    )
+                    rate_limit(
+                        None, request.POST.get("username", ""), "platform_login_account", 10, 900
+                    )
+                except DomainError as exc:
+                    return HttpResponse(exc.message, status=exc.status)
             if user.is_authenticated and user.role != "PLATFORM":
                 return HttpResponse("Brak dostępu.", status=403)
         elif event:

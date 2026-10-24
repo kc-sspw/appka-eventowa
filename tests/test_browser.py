@@ -22,7 +22,10 @@ pytestmark = [
 
 
 @pytest.fixture
-def browser():
+def browser(monkeypatch):
+    # Playwright sync API owns an event loop in this thread. These tests issue
+    # serial ORM assertions only; the live Django server uses its own thread.
+    monkeypatch.setenv("DJANGO_ALLOW_ASYNC_UNSAFE", "true")
     with sync_playwright() as p:
         browser = p.chromium.launch(
             args=["--host-resolver-rules=MAP *.localhost 127.0.0.1", "--no-proxy-server"]
@@ -35,7 +38,7 @@ def login(page, origin, account):
     page.goto(origin + "/auth/login")
     page.get_by_label("Login", exact=True).fill(account.username)
     page.get_by_label("Hasło", exact=True).fill("synthetic-test-password")
-    page.get_by_role("button", name="Zaloguj").click()
+    page.get_by_role("button", name="Wejdź na wydarzenie").click()
     expect(page.get_by_role("button", name="Wyloguj")).to_be_visible()
 
 

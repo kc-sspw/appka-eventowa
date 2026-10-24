@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.db import transaction
 from django.http import Http404
@@ -11,7 +12,7 @@ from game.models import Task
 from game.services import withdraw
 from information.forms import EntryForm, ScheduleForm
 from information.models import Entry, ScheduleItem
-from media_storage.adapters import StorageError, storage_for
+from media_storage.adapters import FakeStorage, StorageError, storage_for
 from media_storage.models import StorageConnection, StorageOperation
 from media_storage.services import usage
 
@@ -42,7 +43,24 @@ def organizer(request):
         .exclude(action="UPLOAD", status="DONE")
         .order_by("-created_at")[:40],
     }
+    context["local_storage"] = settings.STORAGE_BACKEND == "fake"
     return render(request, "organizer.html", context)
+
+
+@require_POST
+@scoped("ORGANIZER")
+def storage_local(request):
+    if not settings.DEBUG or settings.STORAGE_BACKEND != "fake":
+        raise Http404
+    with transaction.atomic():
+        event = Event.objects.select_for_update().get(pk=request.event.pk)
+        assert_open(event)
+        folder = FakeStorage(event.pk).create_event_folder()
+        StorageConnection.objects.get_or_create(
+            event=event, defaults={"folder_id": folder, "owner_id": "local"}
+        )
+    messages.success(request, "Lokalny magazyn testowy jest gotowy.")
+    return redirect("organizer")
 
 
 @require_http_methods(["GET", "POST"])

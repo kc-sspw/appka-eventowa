@@ -41,6 +41,7 @@ urlpatterns = [
     path("organizer/import", events.import_view, name="import"),
     path("organizer/imports", accounts.imports, name="imports"),
     path("organizer/storage/connect", oauth.start, name="storage_connect"),
+    path("organizer/storage/local", events.storage_local, name="storage_local"),
     path("organizer/storage/finish", oauth.finish, name="storage_finish"),
     path("organizer/storage/check", events.storage_check, name="storage_check"),
     path("organizer/storage/<uuid:operation_id>/retry", events.retry, name="storage_retry"),
